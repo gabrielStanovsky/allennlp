@@ -3,7 +3,7 @@ import itertools
 import logging
 
 from overrides import overrides
-from pandas import read_csv
+import pandas
 
 from allennlp.common import Params
 from allennlp.common.checks import ConfigurationError
@@ -17,7 +17,7 @@ from allennlp.data.tokenizers import Token
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
-@DatasetReader.register("openiereader")
+@DatasetReader.register("OpenIEDatasetReader")
 class OpenIEDatasetReader(DatasetReader):
     """
     Reads instances from a pretokenised file where each line is in the following format:
@@ -42,6 +42,7 @@ class OpenIEDatasetReader(DatasetReader):
                  separator = "\t",
                  token_indexers: Dict[str, TokenIndexer] = None) -> None:
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
+        self.separator = separator
 
     @overrides
     def _read(self, file_path: str) -> Iterable[Instance]:
@@ -49,8 +50,8 @@ class OpenIEDatasetReader(DatasetReader):
         file_path = cached_path(file_path)
 
         # Read CSV with pandas with the class separator
-        df = pandas.read_csv(fn,
-                             sep = self.sep,
+        df = pandas.read_csv(file_path,
+                             sep = self.separator,
                              header = 0,
                              keep_default_na = False)
 
@@ -63,9 +64,9 @@ class OpenIEDatasetReader(DatasetReader):
         #TODO: not sure if the casting of head_pred_id to int is necessary
         for sent in sents:
             yield self.text_to_instance(sentence_tokens = sent.word.values,
-                                        head_pred_ids = map(int,
-                                                            sent.head_pred_id.values),
-                                        openie_tags = sent.label.values)
+                                        head_pred_ids = list(map(int,
+                                                                 sent.head_pred_id.values)),
+                                        open_ie_tags = sent.label.values)
 
     #TODO-question: Is this a must? Should this override? Why?
     #               It seems to have a different function in sciencesrl_dataset_reader
@@ -74,7 +75,7 @@ class OpenIEDatasetReader(DatasetReader):
     def text_to_instance(self,
                          sentence_tokens: List[str],
                          head_pred_ids: List[int],
-                         openie_tags: List[str]) -> Instance:  # type: ignore
+                         open_ie_tags: List[str] = None) -> Instance:  # type: ignore
         """
         Create an instance from a tokenized sentence and Open-IE BIO tags
         """
@@ -91,9 +92,9 @@ class OpenIEDatasetReader(DatasetReader):
                                                     sequence_field = tokens)})
 
     @classmethod
-    def from_params(cls, params: Params) -> 'Conll2003DatasetReader':
+    def from_params(cls, params: Params) -> 'OpenIEDatasetReader':
         token_indexers = TokenIndexer.dict_from_params(params.pop('token_indexers', {}))
-        separator = TokenIndexer.dict_from_params(params.pop('separator', '\t'))
+        separator = params.pop('separator', '\t')
         params.assert_empty(cls.__name__)
         return OpenIEDatasetReader(token_indexers = token_indexers,
                                    separator = separator)

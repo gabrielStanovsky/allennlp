@@ -1,0 +1,37 @@
+word_id	word	pred	pred_id	head_pred_id	sent_id	run_id	label
+0	QVC	said	[3]	3	0	0	A0-B
+1	Network	said	[3]	3	0	0	A0-I
+2	Inc.	said	[3]	3	0	0	A0-I
+3	said	said	[3]	3	0	0	P-B
+4	it	said	[3]	3	0	0	A1-B
+5	completed	said	[3]	3	0	0	A1-I
+6	its	said	[3]	3	0	0	A1-I
+7	acquisition	said	[3]	3	0	0	A1-I
+8	of	said	[3]	3	0	0	A1-I
+9	CVN	said	[3]	3	0	0	A1-I
+10	Cos.	said	[3]	3	0	0	A1-I
+11	for	said	[3]	3	0	0	A1-I
+12	about	said	[3]	3	0	0	A1-I
+13	$	said	[3]	3	0	0	A1-I
+14	423	said	[3]	3	0	0	A1-I
+15	million	said	[3]	3	0	0	A1-I
+16	.	said	[3]	3	0	0	A1-I
+
+0	QVC	completed	[5]	5	0	1	A1-B
+1	Network	completed	[5]	5	0	1	A1-I
+2	Inc.	completed	[5]	5	0	1	A1-I
+3	said	completed	[5]	5	0	1	O
+4	it	completed	[5]	5	0	1	O
+5	completed	completed	[5]	5	0	1	P-B
+6	its	completed	[5]	5	0	1	A0-B
+7	acquisition	completed	[5]	5	0	1	A0-I
+8	of	completed	[5]	5	0	1	A0-I
+9	CVN	completed	[5]	5	0	1	A0-I
+10	Cos.	completed	[5]	5	0	1	A0-I
+11	for	completed	[5]	5	0	1	O
+12	about	completed	[5]	5	0	1	A2-B
+13	$	completed	[5]	5	0	1	A2-I
+14	423	completed	[5]	5	0	1	A2-I
+15	million	completed	[5]	5	0	1	A2-I
+16	.	completed	[5]	5	0	1	O
+
