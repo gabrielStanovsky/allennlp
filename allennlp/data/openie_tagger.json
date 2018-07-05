@@ -35,8 +35,9 @@
     },
     "encoder": {
       "type": "lstm",
-      "input_size": 210, // my size + 1024
+      "input_size": 2048, // current word + predicate word
       "hidden_size": 300,
+      "cell_size": 50, // is this needed? what are sensible values?
       "num_layers": 2,
       "dropout": 0.5,
       "bidirectional": true
