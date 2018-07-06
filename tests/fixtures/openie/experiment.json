@@ -17,7 +17,7 @@
   "test_data_path": "tests/fixtures/openie/open_ie.gold_conll",
   "evaluate_on_test": true,
   "model": {
-    "type": "neural_oie",
+    "type": "openie",
     "text_field_embedder": {
       "tokens": {
         "type": "embedding",
@@ -35,9 +35,9 @@
     },
     "encoder": {
       "type": "lstm",
-      "input_size": 2048, // current word + predicate word
-      "hidden_size": 300,
-      "cell_size": 50, // is this needed? what are sensible values?
+      "input_size": 1074, // current word + predicate word
+      "hidden_size": 10,
+//      "cell_size": 50, // is this needed? what are sensible values?
       "num_layers": 2,
       "dropout": 0.5,
       "bidirectional": true
@@ -63,7 +63,7 @@
     }
     "num_epochs": 50,
     "patience": 10,
-    "cuda_device": 0,
+    "cuda_device": -1,
     "validation_metric": "-loss"
   }
 }
