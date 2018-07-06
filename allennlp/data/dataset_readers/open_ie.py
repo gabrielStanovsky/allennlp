@@ -40,7 +40,9 @@ class OpenIEDatasetReader(DatasetReader):
     """
     def __init__(self,
                  separator = "\t",
-                 token_indexers: Dict[str, TokenIndexer] = None) -> None:
+                 token_indexers: Dict[str, TokenIndexer] = None,
+                 lazy: bool = False) -> None:
+        super().__init__(lazy)
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
         self.separator = separator
 
@@ -80,21 +82,29 @@ class OpenIEDatasetReader(DatasetReader):
         Create an instance from a tokenized sentence and Open-IE BIO tags
         """
         # pylint: disable=arguments-differ
+        fields: Dict[str, Field] = {}
+
+        # Populate fields
         tokens = TextField([Token(w)
                             for w in sentence_tokens],
                            token_indexers=self._token_indexers)
 
-        # Construct an instance
-        return Instance({'tokens': tokens,
-                         'pred_id': SequenceLabelField(labels = head_pred_ids,
-                                                       sequence_field = tokens),
-                         'tags': SequenceLabelField(labels = open_ie_tags,
-                                                    sequence_field = tokens)})
+        fields['tokens'] = tokens
+        fields['pred_id'] = SequenceLabelField(labels = head_pred_ids,
+                                               sequence_field = tokens)
+        if (open_ie_tags is not None):
+            fields['tags'] = SequenceLabelField(labels = open_ie_tags,
+                                                sequence_field = tokens)
+
+        # Return an instance with fields
+        return Instance(fields)
 
     @classmethod
     def from_params(cls, params: Params) -> 'OpenIEDatasetReader':
         token_indexers = TokenIndexer.dict_from_params(params.pop('token_indexers', {}))
         separator = params.pop('separator', '\t')
+        lazy = params.pop('lazy', False)
         params.assert_empty(cls.__name__)
         return OpenIEDatasetReader(token_indexers = token_indexers,
-                                   separator = separator)
+                                   separator = separator,
+                                   lazy = lazy)

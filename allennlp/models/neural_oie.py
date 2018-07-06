@@ -81,7 +81,7 @@ class NeuralOIE(Model):
 
     def forward(self,  # type: ignore
                 tokens: Dict[str, torch.LongTensor],
-#                verb_indicator: torch.LongTensor,
+                pred_id: torch.LongTensor,
                 tags: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
