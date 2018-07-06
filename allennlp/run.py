@@ -13,6 +13,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s
                     level=LEVEL)
 
 from allennlp.commands import main  # pylint: disable=wrong-import-position
+from allennlp.data.dataset_readers.open_ie import OpenIEDatasetReader
 
 if __name__ == "__main__":
     main(prog="python -m allennlp.run")

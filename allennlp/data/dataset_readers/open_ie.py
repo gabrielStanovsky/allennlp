@@ -17,7 +17,7 @@ from allennlp.data.tokenizers import Token
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
-@DatasetReader.register("OpenIEDatasetReader")
+@DatasetReader.register("openie")
 class OpenIEDatasetReader(DatasetReader):
     """
     Reads instances from a pretokenised file where each line is in the following format:
