@@ -21,8 +21,8 @@
                             </div>
 
                             <div class="form__field">
-                                <label for="input-sentence">Input text</label>
-                                <textarea type="text" id="input-sentence" type="text" required value placeholder="Enter a sentence."></textarea>
+                                <label for="sentence_tokens">Input text</label>
+                                <textarea type="text" id="sentence_tokens" type="text" required value placeholder="Enter a sentence."></textarea>
                             </div>
 
                             <div class="form__field form__field--btn">
@@ -52,7 +52,7 @@
         // Clear previous response.    
         document.getElementById("output").innerHTML = "";
 
-        var quotedFieldList = ['sentence'];
+        var quotedFieldList = ['sentence_tokens'];
         var data = {};
         quotedFieldList.forEach(function(fieldName) {
             data[fieldName] = document.getElementById("input-" + fieldName).value;
@@ -118,7 +118,7 @@
 		function prefill() {
 			var selectedIndex = parseInt(document.getElementById("unfilled").value);
 			var fetchedValue = prefilledValues[selectedIndex];
-			document.getElementById("input-sentence").value = fetchedValue.split("\t").join("\n");
+			document.getElementById("sentence_tokens").value = fetchedValue.split("\t").join("\n");
 		}
     </script>
 </html>
