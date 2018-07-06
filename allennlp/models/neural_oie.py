@@ -7,7 +7,8 @@ from torch.nn.modules.linear import Linear
 from allennlp.common import Params
 from allennlp.common.checks import check_dimensions_match
 from allennlp.data import Vocabulary
-from allennlp.modules import ElmoLstm, TimeDistributed, TextFieldEmbedder, ConditionalRandomField
+from allennlp.modules import TimeDistributed, TextFieldEmbedder, ConditionalRandomField
+from allennlp.modules.elmo_lstm import ElmoLstm
 from allennlp.modules.conditional_random_field import allowed_transitions
 from allennlp.models.model import Model
 from allennlp.nn import InitializerApplicator, RegularizerApplicator
@@ -43,7 +44,7 @@ class NeuralOIE(Model):
     def __init__(self,
                  vocab: Vocabulary,
                  text_field_embedder: TextFieldEmbedder,
-                 encoder: Seq2SeqEncoder,
+                 encoder: ElmoLstm,
                  label_namespace: str = "labels",
                  constraint_type: str = None,
                  initializer: InitializerApplicator = InitializerApplicator(),
