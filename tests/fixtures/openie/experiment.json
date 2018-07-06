@@ -54,7 +54,7 @@
   },
   "iterator": {
     "type": "bucket",
-    "sorting_keys": [["sentences", "num_fields"]],
+    "sorting_keys": [["tokens", "num_tokens"]], // The original keys from Nikett ([["sentences", "num_fields"]]) raise an error Where're these keys coming from?
     "batch_size": 32
   },
   "trainer": {
