@@ -59,7 +59,10 @@ class OpenIEPredictor(Predictor):
         sentence_token_text = inputs.get("sentence_tokens", [t.text for t in sent_tokens])
         head_pred_ids_all = inputs.get("head_pred_ids", [i for i, t in enumerate(sent_tokens) if t.pos_ == "VERB"])
 
-        instances = [self._dataset_reader.text_to_instance(sentence_tokens=sentence_token_text, head_pred_ids=h) for h in head_pred_ids_all]
+
+        instances = [self._dataset_reader.text_to_instance(sentence_tokens = sentence_token_text,
+                                                           head_pred_ids = [h] * len(sentence_token_text))
+                     for h in head_pred_ids_all]
 
         try:
             # forward returns: {"logits": logits, "mask": mask, "tags": predicted_tags}

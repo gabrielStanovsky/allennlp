@@ -14,3 +14,4 @@ from .coref import CorefPredictor
 from .sentence_tagger import SentenceTaggerPredictor
 from .constituency_parser import ConstituencyParserPredictor
 from .simple_seq2seq import SimpleSeq2SeqPredictor
+from .openie import OpenIEPredictor
