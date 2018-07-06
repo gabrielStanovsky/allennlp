@@ -8,6 +8,8 @@ from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
 from overrides import overrides
 from typing import Tuple
 
+import pdb
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +58,8 @@ class OpenIEPredictor(Predictor):
 
         if not in_conll_format:
             sent_tokens = self.tokenizer.tokenize(inputs["sentence_tokens"])
+
+
         sentence_token_text = inputs.get("sentence_tokens", [t.text for t in sent_tokens])
         head_pred_ids_all = inputs.get("head_pred_ids", [i for i, t in enumerate(sent_tokens) if t.pos_ == "VERB"])
 
