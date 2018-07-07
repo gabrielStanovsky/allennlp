@@ -16,7 +16,7 @@
                             <select onclick="prefill()" id="unfilled">
                                 <option value="">Choose an example...</option>
 								<option value="0">Angela Merkel met and spoke to her EU counterparts during the climate submit in Paris.</option>
-								<option value="0">Plants provide animals with oxygen that they breathe in.</option>
+								<option value="1">Plants provide animals with oxygen that they breathe in.</option>
                             </select>
                             </div>
 
@@ -63,47 +63,49 @@
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = function() {
             if (xhr.status == 200) {
-                var obj = JSON.parse(xhr.responseText)['outputs'];
-                var htmlResults = "<pre>" + JSON.stringify(obj, null, 2) + "</pre>";
-				
-				// // If you want a more impressive visualization than just
-                // // outputting the raw JSON, change this part of the code.
-				// var tableResults = ""; // div contains all tables.
-//                 var obj = JSON.parse(xhr.responseText)['GUI'];
-// 				var obj_sentences = JSON.parse(xhr.responseText)['GUI_sentences'];
-// 				var model_internals = JSON.parse(xhr.responseText)['internals_for_gui'];
-//                 var x = "";
-//                 var expected_order = ['VERB', 'AGENT', 'PATIENT', 'LOC', 'LOC-FROM', 'LOC-TO', 'TIME', 
-//                 'INPUT', 'OUTPUT', 'ENABLE', 'PREVENT'];
-// 				
-// 				for (all_results in obj){
-// 					var verbs = [];
-// 					tableResults += "<p>"+obj_sentences[all_results]+"</p>";
-// 					for (a_result in obj[all_results]){
-// 						if(a_result){
-// 						tableResults += "<div><table>";
-// 						var rows = "";
-// 						for (i=0; i < expected_order.length ; i++){
-// 							  var x = expected_order[i];
-// 							  if(x in obj[all_results][a_result]){
-// 								if(x!='VERB')
-// 								   rows += "<tr><td>"+x+"</td><td>"+ obj[all_results][a_result][x]+"</td></tr>";
-// 								else
-// 									{   verbs[a_result] = obj[all_results][a_result][x];
-// 								   		tableResults+= "<th>"+obj[all_results][a_result][x]+"</th><th></th>";
-// 								    }
-// 							  }
-// 							}
-// 						tableResults += rows + "</table></div>";
-// 						}
-// 					}
-// 										
-// 				}
-// 				document.getElementById("output").innerHTML = tableResults;
+				// var htmlResults = "<pre>" + JSON.stringify(obj, null, 2) + "</pre>";
 				
 				
 				
-				document.getElementById("output").innerHTML = htmlResults;
+				var tableResults = ""; // div contains all tables.
+				// obj is an array of dictionaries (one per predicate) e.g., verb:eat, A1:fruit
+                var tag_span_dicts = JSON.parse(xhr.responseText)['tag_spans']; 
+				var tokens = JSON.parse(xhr.responseText)['tokens'];
+                var x = "";
+                var expected_order = ['A0', 'P', 'A1', 'A2', 'A3', 'A4', 'A5'];
+				tableResults += "<div><p>"+ tokens.join(" ") +"</p></div>";
+				
+				// one sentence can have multiple openie tuples, one per predicate.
+				for (tag_spans_curr_index in tag_span_dicts){
+				    // k is a dictionary key i.e. label name.
+					for (span_label in tag_span_dicts[tag_spans_curr_index]){
+					
+						if(span_label){
+							  tableResults += "<div><table>";
+							  var rows = "";
+							  for (i=0; i < expected_order.length ; i++){
+									var x = expected_order[i];
+									if(x == span_label){
+										  {   
+											  tableResults+= "\n<tr><td><b>" + x + "</b></td>";
+											  tableResults+= "<td>" + tag_span_dicts[tag_spans_curr_index][span_label] + "</td></tr>\n";
+										  }
+									}
+								  }
+							  tableResults += rows + "</table></div>";
+						} // closing if (k)
+						
+					}
+										
+				}
+				document.getElementById("output").innerHTML = tableResults;
+				
+				
+				
+				
+				
+				
+// 				document.getElementById("output").innerHTML = htmlResults;
             }
         };
         xhr.send(JSON.stringify(data));
@@ -119,7 +121,7 @@
 		function prefill() {
 			var selectedIndex = parseInt(document.getElementById("unfilled").value);
 			var fetchedValue = prefilledValues[selectedIndex];
-			document.getElementById("sentence_tokens").value = fetchedValue.split("\t").join("\n");
+			document.getElementById("input-sentence_tokens").value = fetchedValue.split("\t").join("\n");
 		}
     </script>
 </html>
