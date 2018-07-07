@@ -8,9 +8,35 @@ from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
 from overrides import overrides
 from typing import Tuple
 
-import pdb
-
 logger = logging.getLogger(__name__)
+
+
+def gen_tag_spans(tokens, all_bio_tags):
+    # [
+    #   "B-A0",
+    #   "B-A0",
+    #   "B-A0",
+    #   "B-A0",
+    #   "I-A0",
+    #   "B-A0",
+    #   "B-A0",
+    #   "B-A0",
+    #   "B-A0",
+    #   "B-A0"
+    # ]
+    # BIO tags for A0-A5,P,O
+    all_tag_spans = []
+    for bio_tags in all_bio_tags:
+        tag_spans = dict()
+        for i, t in enumerate(bio_tags):
+            if '-' in t:
+                tag_label = ''.join(t[t.index('-')+1:])
+                if tag_label not in tag_spans:
+                    tag_spans[tag_label] = tokens[i]
+                else:
+                    tag_spans[tag_label] += " " + tokens[i]
+        all_tag_spans.append(tag_spans)
+    return all_tag_spans
 
 
 @Predictor.register('openie_predictor')
@@ -59,13 +85,11 @@ class OpenIEPredictor(Predictor):
         if not in_conll_format:
             sent_tokens = self.tokenizer.tokenize(inputs["sentence_tokens"])
 
-
-        sentence_token_text = inputs.get("sentence_tokens", [t.text for t in sent_tokens])
+        sentence_token_text = inputs.get("sentence_tokens") if in_conll_format else [t.text for t in sent_tokens]
         head_pred_ids_all = inputs.get("head_pred_ids", [i for i, t in enumerate(sent_tokens) if t.pos_ == "VERB"])
 
-
-        instances = [self._dataset_reader.text_to_instance(sentence_tokens = sentence_token_text,
-                                                           head_pred_ids = [h] * len(sentence_token_text))
+        instances = [self._dataset_reader.text_to_instance(sentence_tokens=sentence_token_text,
+                                                           head_pred_ids=[h] * len(sentence_token_text))
                      for h in head_pred_ids_all]
 
         try:
@@ -79,5 +103,8 @@ class OpenIEPredictor(Predictor):
         # The purpose of json_outputs is to wrap any other field necessary for the demo
         # e.g., spo format instead of BIO like tags.
         json_outputs = {"outputs": outputs}
-        logger.debug(f"OpenIE predictor:\ninput = {inputs}\noutput =\n{json_outputs}")
+        json_outputs["tag_spans"] = gen_tag_spans(sentence_token_text, outputs)
+        json_outputs["tokens"] = sentence_token_text
+
+        print(f"OpenIE predictor\t{len(instances)} instances:\ninput = {inputs}\noutput =\n{json_outputs}")
         return {**inputs, **json_outputs}
