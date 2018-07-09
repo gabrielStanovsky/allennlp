@@ -61,7 +61,7 @@
     "optimizer": {
       "type": "adam"
     }
-    "num_epochs": 50,
+    "num_epochs": 1,
     "patience": 10,
     "cuda_device": -1,
     "validation_metric": "-loss"

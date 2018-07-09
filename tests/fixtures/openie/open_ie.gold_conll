@@ -16,3 +16,20 @@ word_id	word	pred	pred_id	head_pred_id	sent_id	run_id	label
 14	423	said	[3]	3	0	0	I-A1
 15	million	said	[3]	3	0	0	I-A1
 16	.	said	[3]	3	0	0	I-A1
+
+0	QVC	completed	[5]	5	0	1	B-A1
+1	Network	completed	[5]	5	0	1	I-A1
+2	Inc.	completed	[5]	5	0	1	I-A1
+3	said	completed	[5]	5	0	1	O
+4	it	completed	[5]	5	0	1	O
+5	completed	completed	[5]	5	0	1	B-P
+6	its	completed	[5]	5	0	1	B-A0
+7	acquisition	completed	[5]	5	0	1	I-A0
+8	of	completed	[5]	5	0	1	I-A0
+9	CVN	completed	[5]	5	0	1	I-A0
+10	Cos.	completed	[5]	5	0	1	I-A0
+11	for	completed	[5]	5	0	1	O
+12	about	completed	[5]	5	0	1	B-A2
+13	$	completed	[5]	5	0	1	I-A2
+14	423	completed	[5]	5	0	1	I-A2
+15	million	completed	[5]	5	0	1	I-A2
