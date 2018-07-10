@@ -113,7 +113,7 @@ def hierplane_input_from(spans, tokens, top_level_link=''):
     root_node = create_node(
         nodeType='event',
         word=root_word,  # AO => value
-        span_start=sentence.index(root_word),
+        span_start=sentence.index(root_word) if root_word in sentence else 0,
         span_end=len(root_word),
         link=top_level_link
     )
@@ -124,7 +124,7 @@ def hierplane_input_from(spans, tokens, top_level_link=''):
                 create_node(
                     nodeType='entity',
                     word=spans[o],
-                    span_start=sentence.index(spans[o]),
+                    span_start=sentence.index(spans[o]) if spans[o] in sentence else 0,
                     span_end=len(spans[o]),
                     link=o
                 )
@@ -145,7 +145,7 @@ def hierplane_merged_inputs_from(spans_all, tokens):
     root_node = create_node(
         nodeType='event',
         word=root_word,  # AO => value
-        span_start=sentence.index(root_word),
+        span_start=sentence.index(root_word) if root_word in sentence else 0,
         span_end=len(root_word),
         link=''
     )
@@ -236,6 +236,11 @@ class OpenIEPredictor(Predictor):
 
         # For comparison's sake:
         extractions = self.pe.get_extractions(' '.join(sentence_token_text))
+
+        # Debugging:
+        for ex in extractions:
+            print(f"Debug extractions:\n {ex.args}\n{ex.roles_dict}\n{ex.template}\n{ex.pred_exists}")
+
         json_outputs["tag_spans"] = [dict([("P", ex.template)] + \
                                           [("A{}".format(arg_id), val)
                                            for (arg_id, val) in ex.roles_dict.items()])

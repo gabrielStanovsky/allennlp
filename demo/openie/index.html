@@ -22,6 +22,10 @@
         <link rel = "stylesheet" type = "text/css" href = "demo.css" />
         <script src="//unpkg.com/hierplane/dist/static/hierplane.min.js"></script>
         <link rel="stylesheet" type="text/css" href="//unpkg.com/hierplane/dist/static/hierplane.min.css">
+        <!--<script>-->
+            <!--import { expandAllNodes } from 'ui.js';-->
+        <!--</script>-->
+
     </head>
     <body>
         <div class="pane-container">
@@ -81,7 +85,6 @@
 
 
                         <!--Added for hierplane-->
-                        <br><br><br>
                         <div id="hierplane_output"> </div>
                         <!--<div id="hierplane_output_0"> </div>-->
 
@@ -96,7 +99,17 @@
         }
 
         function display_hierplane_merged(the_tree){
+            // hierplane.expandAllNodes();
             hierplane.renderTree(the_tree, options = { target: '#hierplane_output', theme: 'dark'});
+            // Hide the automatically concatenated text that is less relevant for open IE but more for parse trees
+            // div id="passage"
+            document.getElementById("passage").style.visibility = 'hidden';
+            // import { collapseAllNodes, expandAllNodes } from './stores/modules/ui';
+            // expandAllNodes();
+            // FIXME: for async operation hierplane to render, we might need to wait.
+            var expansionFn = document.getElementsByClassName("tree-expansion-control__trigger");
+            // console.log(logged);
+            expansionFn[1].click(); // Expand nodes by default.
         }
 
     </script>
@@ -171,7 +184,7 @@
 				//     This is design 2             //
 				// ///////////////////////////////////////
 				display_hierplane_merged(JSON.parse(xhr.responseText)['hierplane_inputs_merged']);
-				//
+
             }
         };
         xhr.send(JSON.stringify(data));
