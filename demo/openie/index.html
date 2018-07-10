@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>
-            Neural Open IE demo
+            Supervised Open IE demo
         </title>
         <link rel = "stylesheet" type = "text/css" href = "demo.css" />
     </head>
@@ -10,13 +10,21 @@
             <div class="pane model">
                 <div class="pane__left model__input">
                     <div class="model__content">
-                        <h2><span><a href="https://gabrielstanovsky.github.io/assets/papers/naacl18long/paper.pdf">Neural Open IE</a></span></h2>
+                        <h2><span><a href="https://gabrielstanovsky.github.io/assets/papers/naacl18long/paper.pdf" target="_blank">Supervised Open IE</a></span></h2>
                         <div class="model__content">                            
                             <div class="form__instructions"><span></span>
                             <select onclick="prefill()" id="unfilled">
-                                <option value="">Choose an example...</option>
-								<option value="0">Angela Merkel met and spoke to her EU counterparts during the climate submit in Paris.</option>
-								<option value="1">Plants provide animals with oxygen that they breathe in.</option>
+                              <option value="">Choose an example...</option>
+                              <option value="2">John gave the letter to Mary.</option>
+                              <option value="3">On earth, gravity pulls the marble to the ground .</option>
+                              <option value="1">Plants provide animals with oxygen that they breathe in.</option>
+                              <option value="4">On a 394 - 21 roll call , the House adopted the underlying transportation measure .</option>
+                              <option value="6">Premark International Inc. for example , peddles the M8.7sp Electronic Cycling Simulator .</option>
+                              <option value="5">The latest research pact bolsters Du Pont 's growing portfolio of investments in superconductors .</option>
+			      <option value="0">Yesterday , Nekoosa common closed in composite New York Stock Exchange trading at $ 62.875 , up $ 20.125 , on volume of almost 6.3 million shares .</option>
+
+
+                                
                             </select>
                             </div>
 
@@ -114,8 +122,13 @@
     
     <script>    
 		var prefilledValues = [
-		  "Angela Merkel met and spoke to her EU counterparts during the climate submit in Paris.",
-		  "Plants provide animals with oxygen that they breathe in."
+		  "Yesterday , Nekoosa common closed in composite New York Stock Exchange trading at $ 62.875 , up $ 20.125 , on volume of almost 6.3 million shares .",
+		  "Plants provide animals with oxygen that they breathe in.",
+                  "John gave the letter to Mary.",
+                  "On earth, gravity pulls the marble to the ground .",
+                  "On a 394 - 21 roll call , the House adopted the underlying transportation measure .",
+                  "The latest research pact bolsters Du Pont 's growing portfolio of investments in superconductors .",
+"Premark International Inc. for example , peddles the M8.7sp Electronic Cycling Simulator ."
 		];
 		
 		function prefill() {
