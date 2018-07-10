@@ -8,6 +8,10 @@ from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
 from overrides import overrides
 from typing import Tuple
 
+### for comparison's sake
+from allennlp.service.predictors.prop_extraction import prop_extraction
+###
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,6 +63,7 @@ class OpenIEPredictor(Predictor):
                  ) -> None:
         super().__init__(model, dataset_reader)
         self.tokenizer = WordTokenizer(word_splitter=SpacyWordSplitter(pos_tags=True))
+        self.pe = prop_extraction(include_id = False)
 
     def _json_to_instance(self, json_dict: JsonDict) -> Tuple[Instance, JsonDict]:
         pass
@@ -85,10 +90,18 @@ class OpenIEPredictor(Predictor):
         if not in_conll_format:
             sent_tokens = self.tokenizer.tokenize(inputs["sentence_tokens"])
 
-        sentence_token_text = inputs.get("sentence_tokens") if in_conll_format else [t.text for t in sent_tokens]
-        head_pred_ids_all = inputs.get("head_pred_ids", [i for i, t in enumerate(sent_tokens) if t.pos_ == "VERB"])
+        sentence_token_text = inputs.get("sentence_tokens") \
+                              if in_conll_format \
+                                 else [t.text for t in sent_tokens]
 
-        instances = [self._dataset_reader.text_to_instance(sentence_tokens=sentence_token_text,
+        print(f"sentence_token_text = {sentence_token_text}")
+
+        head_pred_ids_all = inputs.get("head_pred_ids",
+                                       [i for (i, t)
+                                        in enumerate(sent_tokens)
+                                        if t.pos_ == "VERB"])
+
+        instances = [self._dataset_reader.text_to_instance(sentence_tokens = sentence_token_text,
                                                            head_pred_ids=[h] * len(sentence_token_text))
                      for h in head_pred_ids_all]
 
@@ -103,7 +116,14 @@ class OpenIEPredictor(Predictor):
         # The purpose of json_outputs is to wrap any other field necessary for the demo
         # e.g., spo format instead of BIO like tags.
         json_outputs = {"outputs": outputs}
-        json_outputs["tag_spans"] = gen_tag_spans(sentence_token_text, outputs)
+
+        # For comparison's sake:
+        extractions = self.pe.get_extractions(' '.join(sentence_token_text))
+        json_outputs["tag_spans"] = [dict([("P", ex.template)] + \
+                                          [("A{}".format(arg_id), val)
+                                           for (arg_id, val) in ex.roles_dict.items()])
+                                     for ex in extractions] #gen_tag_spans(sentence_token_text, outputs)
+
         json_outputs["tokens"] = sentence_token_text
 
         print(f"OpenIE predictor\t{len(instances)} instances:\ninput = {inputs}\noutput =\n{json_outputs}")
