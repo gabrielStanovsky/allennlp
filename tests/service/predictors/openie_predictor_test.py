@@ -21,7 +21,8 @@ class TestOpenIEPredictor(TestCase):
         assert len(result['outputs'][0]) == len(inputs['sentence_tokens'].split(' '))
         assert len(result['outputs'][1]) == len(inputs['sentence_tokens'].split(' '))
         assert result['tokens'] == inputs['sentence_tokens'].split(" ")
+        assert len(result['hierplane_inputs']) == len(result['outputs'])
+        assert len(result['hierplane_inputs_merged']) > 0
         # the current model is not trained enough to get this output.
         # assert result['tag_spans'][0]['A0'] == inputs['Angela Merkel']
-
 

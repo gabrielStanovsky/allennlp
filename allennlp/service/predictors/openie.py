@@ -1,4 +1,6 @@
 import logging
+from pprint import pprint
+
 from allennlp.common.util import JsonDict
 from allennlp.data import DatasetReader, Instance
 from allennlp.data.tokenizers import WordTokenizer
@@ -30,13 +32,128 @@ def gen_tag_spans(tokens, all_bio_tags):
         tag_spans = dict()
         for i, t in enumerate(bio_tags):
             if '-' in t:
-                tag_label = ''.join(t[t.index('-')+1:])
+                tag_label = ''.join(t[t.index('-') + 1:])
                 if tag_label not in tag_spans:
                     tag_spans[tag_label] = tokens[i]
                 else:
                     tag_spans[tag_label] += " " + tokens[i]
         all_tag_spans.append(tag_spans)
     return all_tag_spans
+
+
+#            {
+#               nodeType: 'entity',
+#               word: 'Sam',
+#               link: 'subject',
+#               spans: [
+#                 {
+#                   start: 0,
+#                   end: 3
+#                 }
+#               ]
+#             }
+def create_node(nodeType, word, span_start, span_end, link):
+    d = dict()
+    d["nodeType"] = nodeType
+    d["word"] = word
+    if link:
+        d["link"] = link
+    d["spans"] = [{"start": span_start, "end": span_end}]
+    return d
+
+
+# {
+#         text: 'Sam likes bananas',
+#         root: {
+#           nodeType: 'event',
+#           word: 'like',
+#           spans: [
+#             {
+#               start: 4,
+#               end: 9
+#             }
+#           ],
+#           children: [
+#             {
+#               nodeType: 'entity',
+#               word: 'Sam',
+#               link: 'subject',
+#               spans: [
+#                 {
+#                   start: 0,
+#                   end: 3
+#                 }
+#               ]
+#             },
+#             {
+#               nodeType: 'entity',
+#               word: 'banana',
+#               link: 'object',
+#               attributes: [ '>1'],
+#               spans: [
+#                 {
+#                   start: 10,
+#                   end: 17
+#                 }
+#               ]
+#             }
+#           ]
+#         }
+def hierplane_input_from(spans, tokens, top_level_link=''):
+    d = dict()
+    sentence = " ".join(tokens)
+    root_word = spans.get('P', "")
+    # Multiple predicates indicated by top_level_link not being blank
+    # For each such predicate, d[text] is the P value (i.e. a pattern)
+    d["text"] = sentence if (not top_level_link or len(top_level_link) == 0) else "_"+root_word
+    root_node = create_node(
+        nodeType='event',
+        word=root_word,  # AO => value
+        span_start=sentence.index(root_word),
+        span_end=len(root_word),
+        link=top_level_link
+    )
+    children = []
+    for o in ['A0', 'A1', 'A2', 'A3', 'A4', 'A5']:
+        if o in spans:
+            children.append(
+                create_node(
+                    nodeType='entity',
+                    word=spans[o],
+                    span_start=sentence.index(spans[o]),
+                    span_end=len(spans[o]),
+                    link=o
+                )
+            )
+    root_node['children'] = children
+    d['root'] = root_node
+    return d
+
+
+# github.com/allenai/hierplane#web
+# example of a tree: https://github.com/allenai/allennlp/blob/5352a198e1831e63c76ee8e51694c1bf6b63b1b1/allennlp/tests/predictors/constituency_parser_test.py
+# for css selectors: https://www.w3schools.com/cssref/trysel.asp
+def hierplane_merged_inputs_from(spans_all, tokens):
+    d = dict()
+    sentence = " ".join(tokens)
+    d["text"] = sentence
+    root_word = sentence
+    root_node = create_node(
+        nodeType='event',
+        word=root_word,  # AO => value
+        span_start=sentence.index(root_word),
+        span_end=len(root_word),
+        link=''
+    )
+    children = []
+    for tree_number, spans in enumerate(spans_all):
+        temp_dict = hierplane_input_from(spans, tokens, 'Extraction_' + str(tree_number + 1))
+        children.append(temp_dict['root'])
+    root_node['children'] = children
+    d['root'] = root_node
+    print(f"\nDebug: the hierplane tree is: ")
+    pprint(d)
+    return d
 
 
 @Predictor.register('openie_predictor')
@@ -105,6 +222,12 @@ class OpenIEPredictor(Predictor):
         json_outputs = {"outputs": outputs}
         json_outputs["tag_spans"] = gen_tag_spans(sentence_token_text, outputs)
         json_outputs["tokens"] = sentence_token_text
+        json_outputs["hierplane_inputs"] = [
+            hierplane_input_from(spans, json_outputs["tokens"])
+            for spans in json_outputs["tag_spans"]
+        ]
+        json_outputs["hierplane_inputs_merged"] = hierplane_merged_inputs_from(
+            json_outputs["tag_spans"], json_outputs["tokens"])
 
         print(f"OpenIE predictor\t{len(instances)} instances:\ninput = {inputs}\noutput =\n{json_outputs}")
         return {**inputs, **json_outputs}
