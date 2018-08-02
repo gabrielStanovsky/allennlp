@@ -20,5 +20,5 @@ class TestOpenIEDatasetReader:
                           "of", "CVN", "Cos.", "for","about", "$" , "423", "million", "."]
 
         # Check the tags of the second sentence
-        assert list(instances[1].fields["tags"].labels) == ["A1-B","A1-I", "A1-I", "O", "O", "P-B", "A0-B", "A0-I",
-                                                            "A0-I", "A0-I", "A0-I", "O", "A2-B", "A2-I", "A2-I", "A2-I", "O"]
+        assert list(instances[1].fields["tags"].labels) == ["B-A1","I-A1", "I-A1", "O", "O", "B-P", "B-A0", "I-A0",
+                                                            "I-A0", "I-A0", "I-A0", "O", "B-A2", "I-A2", "I-A2", "I-A2"]
