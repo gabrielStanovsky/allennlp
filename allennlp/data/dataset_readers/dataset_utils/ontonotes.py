@@ -3,7 +3,7 @@ from collections import defaultdict
 import codecs
 import os
 import logging
-
+import pdb
 from nltk import Tree
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -261,8 +261,7 @@ class Ontonotes:
         coref_stacks: DefaultDict[int, List[int]] = defaultdict(list)
 
         for index, row in enumerate(conll_rows):
-            conll_components = row.split()
-
+            conll_components = row.split('\t')
             document_id = conll_components[0]
             sentence_id = int(conll_components[1])
             word = conll_components[3]

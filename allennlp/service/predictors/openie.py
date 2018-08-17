@@ -1,4 +1,5 @@
 import logging
+import pdb
 from pprint import pprint
 
 from allennlp.common.util import JsonDict
@@ -9,10 +10,7 @@ from allennlp.service.predictors.predictor import Predictor
 from allennlp.data.tokenizers.word_splitter import SpacyWordSplitter
 from overrides import overrides
 from typing import Tuple
-
-### for comparison's sake
-from allennlp.service.predictors.prop_extraction import prop_extraction
-###
+from allennlp.data.tokenizers import Token
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +178,6 @@ class OpenIEPredictor(Predictor):
                  ) -> None:
         super().__init__(model, dataset_reader)
         self.tokenizer = WordTokenizer(word_splitter=SpacyWordSplitter(pos_tags=True))
-        self.pe = prop_extraction(include_id = False)
 
     def _json_to_instance(self, json_dict: JsonDict) -> Tuple[Instance, JsonDict]:
         pass
@@ -218,13 +215,18 @@ class OpenIEPredictor(Predictor):
                                         in enumerate(sent_tokens)
                                         if t.pos_ == "VERB"])
 
-        instances = [self._dataset_reader.text_to_instance(sentence_tokens = sentence_token_text,
-                                                           head_pred_ids=[h] * len(sentence_token_text))
+        tokens = [Token(t) for t in sentence_token_text]
+        instances = [self._dataset_reader.text_to_instance(tokens,
+                                                           [1 if (word_ind ==h) \
+                                                            else 0
+                                                            for word_ind
+                                                            in range(len(tokens))])
                      for h in head_pred_ids_all]
 
         try:
-            # forward returns: {"logits": logits, "mask": mask, "tags": predicted_tags}
-            outputs = [self._model.forward_on_instance(instance, cuda_device)["tags"] for instance in instances]
+            outputs = [self._model.forward_on_instance(instance,
+                                                       cuda_device)["tags"]
+                       for instance in instances]
         except:
             # We do not want notorious GUI sentences to break the system.
             logger.error(f"Exception in OpenIE input: {inputs}")
@@ -234,18 +236,14 @@ class OpenIEPredictor(Predictor):
         # e.g., spo format instead of BIO like tags.
         json_outputs = {"outputs": outputs}
 
-        # For comparison's sake:
-        extractions = self.pe.get_extractions(' '.join(sentence_token_text))
+        # # For comparison's sake:
+        # extractions = self.pe.get_extractions(' '.join(sentence_token_text))
 
-        # Debugging:
-        for ex in extractions:
-            print(f"Debug extractions:\n {ex.args}\n{ex.roles_dict}\n{ex.template}\n{ex.pred_exists}")
+        # # Debugging:
+        # for ex in extractions:
+        #     print(f"Debug extractions:\n {ex.args}\n{ex.roles_dict}\n{ex.template}\n{ex.pred_exists}")
 
-        json_outputs["tag_spans"] = [dict([("P", ex.template)] + \
-                                          [("A{}".format(arg_id), val)
-                                           for (arg_id, val) in ex.roles_dict.items()])
-                                     for ex in extractions] #gen_tag_spans(sentence_token_text, outputs)
-
+        json_outputs["tag_spans"] = gen_tag_spans(sentence_token_text, outputs)
         json_outputs["tokens"] = sentence_token_text
         json_outputs["hierplane_inputs"] = [
             hierplane_input_from(spans, json_outputs["tokens"])
