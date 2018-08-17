@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>
-            Supervised Open IE demo
+            Supervised Open IE demo (beta)
         </title>
         <style>
            .pagination a {
@@ -32,8 +32,8 @@
             <div class="pane model">
                 <div class="pane__left model__input">
                     <div class="model__content">
-                        <h2><span><a href="https://gabrielstanovsky.github.io/assets/papers/naacl18long/paper.pdf" target="_blank">Supervised Open IE</a></span></h2>
-                        <div class="model__content">                            
+                        <h2><span><a href="https://gabrielstanovsky.github.io/assets/papers/naacl18long/paper.pdf" target="_blank">Supervised Open IE (Beta)</a></span></h2>
+                        <div class="model__content">
                             <div class="form__instructions"><span></span>
                             <select onclick="prefill()" id="unfilled">
                               <option value="">Choose an example...</option>
@@ -46,7 +46,7 @@
 			      <option value="0">Yesterday , Nekoosa common closed in composite New York Stock Exchange trading at $ 62.875 , up $ 20.125 , on volume of almost 6.3 million shares .</option>
 
 
-                                
+
                             </select>
                             </div>
 
@@ -120,7 +120,7 @@
     var global_hierplane;
 
     function predict() {
-        // Clear previous response.    
+        // Clear previous response.
         document.getElementById("output").innerHTML = "";
 
         var quotedFieldList = ['sentence_tokens'];
@@ -135,63 +135,69 @@
         xhr.onload = function() {
             if (xhr.status == 200) {
 				// var htmlResults = "<pre>" + JSON.stringify(obj, null, 2) + "</pre>";
-				
-				
-				
+
+
+
 				var tableResults = ""; // div contains all tables.
 				// obj is an array of dictionaries (one per predicate) e.g., verb:eat, A1:fruit
-                var tag_span_dicts = JSON.parse(xhr.responseText)['tag_spans']; 
+                var tag_span_dicts = JSON.parse(xhr.responseText)['tag_spans'];
 				var tokens = JSON.parse(xhr.responseText)['tokens'];
                 var x = "";
-                var expected_order = ['A0', 'P', 'A1', 'A2', 'A3', 'A4', 'A5'];
+                var expected_order = ['ARG0', 'BV', 'V', 'AV', 'ARG1', 'ARG2', 'ARG3', 'ARG4', 'ARG5'];
 				tableResults += "<div><p>"+ tokens.join(" ") +"</p></div>";
-				
+
 				// one sentence can have multiple openie tuples, one per predicate.
 				for (tag_spans_curr_index in tag_span_dicts){
 				    // k is a dictionary key i.e. label name.
+
+            for (i=0; i < expected_order.length ; i++){
+
+              var x = expected_order[i];
 					for (span_label in tag_span_dicts[tag_spans_curr_index]){
-					
+
 						if(span_label){
-							  tableResults += "<div><table>";
+							  //
 							  var rows = "";
-							  for (i=0; i < expected_order.length ; i++){
-									var x = expected_order[i];
+
 									if(x == span_label){
-										  {   
+										  {
+                        tableResults += "<div><table>";
 											  tableResults+= "\n<tr><td><b>" + x + "</b></td>";
 											  tableResults+= "<td>" + tag_span_dicts[tag_spans_curr_index][span_label] + "</td></tr>\n";
+                        tableResults += rows + "</table></div>";
 										  }
 									}
 								  }
-							  tableResults += rows + "</table></div>";
+                //alert(tableResults)
+							  //tableResults += rows + "</table></div>";
 						} // closing if (k)
-						
+
 					}
-										
+
 				}
 
-				//document.getElementById("output").innerHTML = tableResults;
+				document.getElementById("output").innerHTML = tableResults;
 				//
 				//
 				// ///////////////////////////////////////
 				// //  Uncomment this for design 1 //
 				// ///////////////////////////////////////
-				// global_hierplane = JSON.parse(xhr.responseText)['hierplane_inputs'];
+				//global_hierplane = JSON.parse(xhr.responseText)['hierplane_inputs'];
 				// display_hierplane_global_val(0);  // display the first element by default.
 				//
 				//
 				//// /////////////////////////////////////
 				//     This is design 2             //
 				// ///////////////////////////////////////
-				display_hierplane_merged(JSON.parse(xhr.responseText)['hierplane_inputs_merged']);
+				// display_hierplane_merged(JSON.parse(xhr.responseText)['hierplane_inputs_merged']);
 
             }
         };
         xhr.send(JSON.stringify(data));
     }
     </script>
-    
-    <script>    
+
+    <script>
 		var prefilledValues = [
 		  "Yesterday , Nekoosa common closed in composite New York Stock Exchange trading at $ 62.875 , up $ 20.125 , on volume of almost 6.3 million shares .",
 		  "Plants provide animals with oxygen that they breathe in.",
@@ -201,7 +207,7 @@
                   "The latest research pact bolsters Du Pont 's growing portfolio of investments in superconductors .",
 "Premark International Inc. for example , peddles the M8.7sp Electronic Cycling Simulator ."
 		];
-		
+
 		function prefill() {
 			var selectedIndex = parseInt(document.getElementById("unfilled").value);
 			var fetchedValue = prefilledValues[selectedIndex];

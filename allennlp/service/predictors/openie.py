@@ -35,6 +35,8 @@ def gen_tag_spans(tokens, all_bio_tags):
         for i, t in enumerate(bio_tags):
             if '-' in t:
                 tag_label = ''.join(t[t.index('-') + 1:])
+                if tag_label.endswith('V'):
+                    tag_label = 'V'
                 if tag_label not in tag_spans:
                     tag_spans[tag_label] = tokens[i]
                 else:
@@ -237,7 +239,7 @@ class OpenIEPredictor(Predictor):
         json_outputs = {"outputs": outputs}
 
         json_outputs["tag_spans"] = gen_tag_spans(sentence_token_text, outputs)
-        pdb.set_trace()
+#        pdb.set_trace()
         json_outputs["tokens"] = sentence_token_text
         json_outputs["hierplane_inputs"] = [
             hierplane_input_from(spans, json_outputs["tokens"])
