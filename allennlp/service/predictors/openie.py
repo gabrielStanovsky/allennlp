@@ -236,14 +236,8 @@ class OpenIEPredictor(Predictor):
         # e.g., spo format instead of BIO like tags.
         json_outputs = {"outputs": outputs}
 
-        # # For comparison's sake:
-        # extractions = self.pe.get_extractions(' '.join(sentence_token_text))
-
-        # # Debugging:
-        # for ex in extractions:
-        #     print(f"Debug extractions:\n {ex.args}\n{ex.roles_dict}\n{ex.template}\n{ex.pred_exists}")
-
         json_outputs["tag_spans"] = gen_tag_spans(sentence_token_text, outputs)
+        pdb.set_trace()
         json_outputs["tokens"] = sentence_token_text
         json_outputs["hierplane_inputs"] = [
             hierplane_input_from(spans, json_outputs["tokens"])
