@@ -4,6 +4,7 @@ import textwrap
 
 from overrides import overrides
 import torch
+import pdb
 from torch.autograd import Variable
 
 from allennlp.common.checks import ConfigurationError
@@ -55,8 +56,9 @@ class SequenceLabelField(Field[torch.Tensor]):
         self._indexed_labels = None
         self._maybe_warn_for_namespace(label_namespace)
         if len(labels) != sequence_field.sequence_length():
+            pdb.set_trace()
             raise ConfigurationError("Label length and sequence length "
-                                     "don't match: %d and %d" % (len(labels), sequence_field.sequence_length()))
+                                     "don't match: %d and %d (%s)" % (len(labels), sequence_field.sequence_length(), str(sequence_field)))
 
         if all([isinstance(x, int) for x in labels]):
             self._indexed_labels = labels

@@ -69,3 +69,4 @@ pytz==2017.3
 
 # For Open IE datareader
 pandas==0.23.1
+docopt
