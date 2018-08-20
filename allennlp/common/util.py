@@ -8,10 +8,15 @@ import importlib
 import logging
 import pkgutil
 import random
-import resource
 import subprocess
 import sys
 import os
+
+try:
+    import resource
+except ImportError:
+    # resource doesn't exist on Windows systems
+    resource = None
 
 import torch
 import numpy
@@ -31,6 +36,15 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 JsonDict = Dict[str, Any]  # pylint: disable=invalid-name
 
+# If you want to have start and/or end symbols for any reason in your code, we recommend you use
+# these, to have a common place to import from.  Also, it's important for some edge cases in how
+# data is processed for these symbols to be lowercase, not uppercase (because we have code that
+# will lowercase tokens for you in some circumstances, and we need this symbol to not change in
+# those cases).
+START_SYMBOL = '@start@'
+END_SYMBOL = '@end@'
+
+
 def sanitize(x: Any) -> Any:  # pylint: disable=invalid-name,too-many-return-statements
     """
     Sanitize turns PyTorch and Numpy types into basic Python types so they
@@ -39,9 +53,7 @@ def sanitize(x: Any) -> Any:  # pylint: disable=invalid-name,too-many-return-sta
     if isinstance(x, (str, float, int, bool)):
         # x is already serializable
         return x
-    elif isinstance(x, torch.autograd.Variable):
-        return sanitize(x.data)
-    elif isinstance(x, torch._TensorBase):  # pylint: disable=protected-access
+    elif isinstance(x, torch.Tensor):
         # tensor needs to be converted to a list (and moved to cpu if necessary)
         return x.cpu().tolist()
     elif isinstance(x, numpy.ndarray):
@@ -61,8 +73,12 @@ def sanitize(x: Any) -> Any:  # pylint: disable=invalid-name,too-many-return-sta
         return x.text
     elif x is None:
         return "None"
+    elif hasattr(x, 'to_json'):
+        return x.to_json()
     else:
-        raise ValueError("cannot sanitize {} of type {}".format(x, type(x)))
+        raise ValueError(f"Cannot sanitize {x} of type {type(x)}. "
+                         "If this is your own custom class, add a `to_json(self)` method "
+                         "that returns a JSON-like object.")
 
 def group_by_count(iterable: List[Any], count: int, default_value: Any) -> List[List[Any]]:
     """
@@ -256,11 +272,14 @@ def import_submodules(package_name: str) -> None:
     """
     importlib.invalidate_caches()
 
+    # Import at top level
     module = importlib.import_module(package_name)
-    path = getattr(module, '__path__', '')
+    path = getattr(module, '__path__', [])
 
+    # walk_packages only finds immediate children, so need to recurse.
     for _, name, _ in pkgutil.walk_packages(path):
-        importlib.import_module(package_name + '.' + name)
+        subpackage = f"{package_name}.{name}"
+        import_submodules(subpackage)
 
 
 def peak_memory_mb() -> float:
@@ -272,7 +291,7 @@ def peak_memory_mb() -> float:
 
     Only works on OSX and Linux, returns 0.0 otherwise.
     """
-    if sys.platform not in ('linux', 'darwin'):
+    if resource is None or sys.platform not in ('linux', 'darwin'):
         return 0.0
 
     # TODO(joelgrus): For whatever, our pinned version 0.521 of mypy does not like
@@ -333,3 +352,13 @@ def is_lazy(iterable: Iterable[A]) -> bool:
     which here just means it's not a list.
     """
     return not isinstance(iterable, list)
+
+def get_frozen_and_tunable_parameter_names(model: torch.nn.Module) -> List:
+    frozen_parameter_names = []
+    tunable_parameter_names = []
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            frozen_parameter_names.append(name)
+        else:
+            tunable_parameter_names.append(name)
+    return [frozen_parameter_names, tunable_parameter_names]

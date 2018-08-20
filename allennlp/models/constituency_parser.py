@@ -5,7 +5,6 @@ import torch
 from torch.nn.modules.linear import Linear
 from nltk import Tree
 
-from allennlp.common import Params
 from allennlp.common.checks import check_dimensions_match
 from allennlp.data import Vocabulary
 from allennlp.modules import Seq2SeqEncoder, TimeDistributed, TextFieldEmbedder, FeedForward
@@ -16,7 +15,7 @@ from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_logits
 from allennlp.nn.util import last_dim_softmax, get_lengths_from_binary_sequence_mask
 from allennlp.training.metrics import CategoricalAccuracy
-from allennlp.training.metrics import EvalbBracketingScorer
+from allennlp.training.metrics import EvalbBracketingScorer, DEFAULT_EVALB_DIR
 from allennlp.common.checks import ConfigurationError
 
 class SpanInformation(NamedTuple):
@@ -61,7 +60,7 @@ class SpanConstituencyParser(Model):
     encoder : ``Seq2SeqEncoder``, required.
         The encoder that we will use in between embedding tokens and
         generating span representations.
-    feedforward_layer : ``FeedForward``, required.
+    feedforward : ``FeedForward``, required.
         The FeedForward layer that we will use in between the encoder and the linear
         projection to a distribution over span labels.
     pos_tag_embedding : ``Embedding``, optional.
@@ -70,27 +69,32 @@ class SpanConstituencyParser(Model):
         Used to initialize the model parameters.
     regularizer : ``RegularizerApplicator``, optional (default=``None``)
         If provided, will be used to calculate the regularization penalty during training.
+    evalb_directory_path : ``str``, optional (default=``DEFAULT_EVALB_DIR``)
+        The path to the directory containing the EVALB executable used to score
+        bracketed parses. By default, will use the EVALB included with allennlp,
+        which is located at allennlp/tools/EVALB . If ``None``, EVALB scoring
+        is not used.
     """
     def __init__(self,
                  vocab: Vocabulary,
                  text_field_embedder: TextFieldEmbedder,
                  span_extractor: SpanExtractor,
                  encoder: Seq2SeqEncoder,
-                 feedforward_layer: FeedForward = None,
+                 feedforward: FeedForward = None,
                  pos_tag_embedding: Embedding = None,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None,
-                 evalb_directory_path: str = None) -> None:
+                 evalb_directory_path: str = DEFAULT_EVALB_DIR) -> None:
         super(SpanConstituencyParser, self).__init__(vocab, regularizer)
 
         self.text_field_embedder = text_field_embedder
         self.span_extractor = span_extractor
         self.num_classes = self.vocab.get_vocab_size("labels")
         self.encoder = encoder
-        self.feedforward_layer = TimeDistributed(feedforward_layer) if feedforward_layer else None
+        self.feedforward_layer = TimeDistributed(feedforward) if feedforward else None
         self.pos_tag_embedding = pos_tag_embedding or None
-        if feedforward_layer is not None:
-            output_dim = feedforward_layer.get_output_dim()
+        if feedforward is not None:
+            output_dim = feedforward.get_output_dim()
         else:
             output_dim = span_extractor.get_output_dim()
 
@@ -107,9 +111,9 @@ class SpanConstituencyParser(Model):
                                span_extractor.get_input_dim(),
                                "encoder input dim",
                                "span extractor input dim")
-        if feedforward_layer is not None:
+        if feedforward is not None:
             check_dimensions_match(span_extractor.get_output_dim(),
-                                   feedforward_layer.get_input_dim(),
+                                   feedforward.get_input_dim(),
                                    "span extractor output dim",
                                    "feedforward input dim")
 
@@ -199,9 +203,12 @@ class SpanConstituencyParser(Model):
         num_spans = get_lengths_from_binary_sequence_mask(span_mask)
 
         encoded_text = self.encoder(embedded_text_input, mask)
+
         span_representations = self.span_extractor(encoded_text, spans, mask, span_mask)
+
         if self.feedforward_layer is not None:
             span_representations = self.feedforward_layer(span_representations)
+
         logits = self.tag_projection_layer(span_representations)
         class_probabilities = last_dim_softmax(logits, span_mask.unsqueeze(-1))
 
@@ -456,35 +463,3 @@ class SpanConstituencyParser(Model):
             evalb_metrics = self._evalb_score.get_metric(reset=reset)
             all_metrics.update(evalb_metrics)
         return all_metrics
-
-    @classmethod
-    def from_params(cls, vocab: Vocabulary, params: Params) -> 'SpanConstituencyParser':
-        embedder_params = params.pop("text_field_embedder")
-        text_field_embedder = TextFieldEmbedder.from_params(vocab, embedder_params)
-        span_extractor = SpanExtractor.from_params(params.pop("span_extractor"))
-        encoder = Seq2SeqEncoder.from_params(params.pop("encoder"))
-
-        feed_forward_params = params.pop("feedforward", None)
-        if feed_forward_params is not None:
-            feedforward_layer = FeedForward.from_params(feed_forward_params)
-        else:
-            feedforward_layer = None
-        pos_tag_embedding_params = params.pop("pos_tag_embedding", None)
-        if pos_tag_embedding_params is not None:
-            pos_tag_embedding = Embedding.from_params(vocab, pos_tag_embedding_params)
-        else:
-            pos_tag_embedding = None
-        initializer = InitializerApplicator.from_params(params.pop('initializer', []))
-        regularizer = RegularizerApplicator.from_params(params.pop('regularizer', []))
-        evalb_directory_path = params.pop("evalb_directory_path", None)
-        params.assert_empty(cls.__name__)
-
-        return cls(vocab=vocab,
-                   text_field_embedder=text_field_embedder,
-                   span_extractor=span_extractor,
-                   encoder=encoder,
-                   feedforward_layer=feedforward_layer,
-                   pos_tag_embedding=pos_tag_embedding,
-                   initializer=initializer,
-                   regularizer=regularizer,
-                   evalb_directory_path=evalb_directory_path)
