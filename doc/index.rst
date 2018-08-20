@@ -16,8 +16,10 @@ AllenNLP is a libary built on top of PyTorch to make NLP easier.
    api/allennlp.common
    api/allennlp.data
    api/allennlp.models
+   api/allennlp.predictors
    api/allennlp.modules
    api/allennlp.nn
+   api/allennlp.semparse
    api/allennlp.service
    api/allennlp.training
 

@@ -1,12 +1,12 @@
 from collections import defaultdict
 from typing import Dict, List
 
-from allennlp.common import Params
+from allennlp.common.registrable import FromParams
 from allennlp.nn.decoding.decoder_step import DecoderStep
 from allennlp.nn.decoding.decoder_state import DecoderState
 
 
-class BeamSearch:
+class BeamSearch(FromParams):
     """
     This class implements beam search over transition sequences given an initial ``DecoderState``
     and a ``DecoderStep``, returning the highest scoring final states found by the beam (the states
@@ -77,12 +77,7 @@ class BeamSearch:
         for batch_index, batch_states in finished_states.items():
             # The time this sort takes is pretty negligible, no particular need to optimize this
             # yet.  Maybe with a larger beam size...
-            finished_to_sort = [(-state.score[0].data[0], state) for state in batch_states]
+            finished_to_sort = [(-state.score[0].item(), state) for state in batch_states]
             finished_to_sort.sort(key=lambda x: x[0])
             best_states[batch_index] = [state[1] for state in finished_to_sort[:self._beam_size]]
         return best_states
-
-    @classmethod
-    def from_params(cls, params: Params) -> 'BeamSearch':
-        beam_size = params.pop('beam_size')
-        return cls(beam_size=beam_size)
