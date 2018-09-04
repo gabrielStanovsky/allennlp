@@ -3,6 +3,7 @@ from collections import defaultdict
 import codecs
 import os
 import logging
+
 from nltk import Tree
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -77,6 +78,7 @@ class OntonotesSentence:
         self.named_entities = named_entities
         self.srl_frames = srl_frames
         self.coref_spans = coref_spans
+
 
 class Ontonotes:
     """
