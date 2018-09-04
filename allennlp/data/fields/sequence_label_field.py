@@ -11,8 +11,6 @@ from allennlp.data.fields.field import Field
 from allennlp.data.fields.sequence_field import SequenceField
 from allennlp.data.vocabulary import Vocabulary
 
-import pdb
-
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
@@ -56,9 +54,8 @@ class SequenceLabelField(Field[torch.Tensor]):
         self._indexed_labels = None
         self._maybe_warn_for_namespace(label_namespace)
         if len(labels) != sequence_field.sequence_length():
-            pdb.set_trace()
             raise ConfigurationError("Label length and sequence length "
-                                     "don't match: %d and %d (%s)" % (len(labels), sequence_field.sequence_length(), str(sequence_field)))
+                                     "don't match: %d and %d" % (len(labels), sequence_field.sequence_length()))
 
         if all([isinstance(x, int) for x in labels]):
             self._indexed_labels = labels
