@@ -11,6 +11,8 @@ from allennlp.data.fields.field import Field
 from allennlp.data.fields.sequence_field import SequenceField
 from allennlp.data.vocabulary import Vocabulary
 
+import pdb
+
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
