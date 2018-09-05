@@ -18,7 +18,7 @@ from allennlp.training.metrics import SpanBasedF1Measure
 
 
 @Model.register("openie")
-class NeuralOIE(Model):
+class NeuralOie(Model):
     """
     This model performs Open Information Extraction (Open IE) using BIO tags representing predicate and
     arbitrary number of arguments.
@@ -57,7 +57,7 @@ class NeuralOIE(Model):
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None,
                  label_smoothing: float = None) -> None:
-        super(NeuralOIE, self).__init__(vocab, regularizer)
+        super(NeuralOie, self).__init__(vocab, regularizer)
 
         self.text_field_embedder = text_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
@@ -194,7 +194,7 @@ class NeuralOIE(Model):
         return transition_matrix
 
     @classmethod
-    def from_params(cls, vocab: Vocabulary, params: Params) -> 'NeuralOIE':
+    def from_params(cls, vocab: Vocabulary, params: Params) -> 'NeuralOie':
         embedder_params = params.pop("text_field_embedder")
         text_field_embedder = TextFieldEmbedder.from_params(vocab, embedder_params)
 

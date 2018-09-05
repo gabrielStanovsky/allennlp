@@ -161,7 +161,7 @@ def hierplane_merged_inputs_from(spans_all, tokens):
 
 
 @Predictor.register('openie_predictor')
-class OpenIEPredictor(Predictor):
+class OpenIePredictor(Predictor):
     """
     Predictor for the `models.OpenIEModel` model.
     Used by online demo and for prediction on an input file using command line 

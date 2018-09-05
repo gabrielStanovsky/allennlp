@@ -179,7 +179,6 @@ class Ontonotes:
         The delimiter to use when splitting column values. The default value, None, is interpreted as
         splitting using all space characters.
     """
-
     def __init__(self, delimiter: Optional[str] = None):
         self.delimiter = delimiter
 
