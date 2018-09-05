@@ -516,7 +516,7 @@ class Trainer:
             metrics = self._get_metrics(train_loss, batches_this_epoch)
             description = self._description_from_metrics(metrics)
 
-            train_generator_tqdm.set_description(description)#, refresh=False)
+            train_generator_tqdm.set_description(description, refresh=False)
 
             # Log parameter values to Tensorboard
             if batch_num_total % self._summary_interval == 0:
@@ -689,7 +689,7 @@ class Trainer:
             # Update the description with the latest metrics
             val_metrics = self._get_metrics(val_loss, batches_this_epoch)
             description = self._description_from_metrics(val_metrics)
-            val_generator_tqdm.set_description(description)#, refresh=False)
+            val_generator_tqdm.set_description(description, refresh=False)
 
         return val_loss, batches_this_epoch
 
