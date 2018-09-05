@@ -24,4 +24,3 @@ except ModuleNotFoundError:
     raise
 
 from allennlp.version import VERSION as __version__
-from allennlp.models.neural_oie import NeuralOIE
