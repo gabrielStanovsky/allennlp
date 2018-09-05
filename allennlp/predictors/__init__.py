@@ -18,4 +18,4 @@ from allennlp.predictors.sentence_tagger import SentenceTaggerPredictor
 from allennlp.predictors.simple_seq2seq import SimpleSeq2SeqPredictor
 from allennlp.predictors.wikitables_parser import WikiTablesParserPredictor
 from allennlp.predictors.nlvr_parser import NlvrParserPredictor
-from allennlp.predictors.openie import OpenIEPredictor
+from allennlp.predictors.openie import OpenIePredictor
