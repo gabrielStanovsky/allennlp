@@ -1,6 +1,6 @@
 {
   "dataset_reader": {
-    "type": "openie",
+    "type": "srl", // Open IE uses the same file format as SRL
     "token_indexers": {
       "tokens": {
         "type": "single_id",
@@ -9,12 +9,11 @@
       "elmo": {
         "type": "elmo_characters"
       }
-    },
-    "separator": "\t"
+    }
   },
-  "train_data_path": "tests/fixtures/openie/open_ie.gold_conll",
-  "validation_data_path": "tests/fixtures/openie/open_ie.gold_conll",
-  "test_data_path": "tests/fixtures/openie/open_ie.gold_conll",
+  "train_data_path": "allennlp/tests/fixtures/openie/",
+  "validation_data_path": "allennlp/tests/fixtures/openie/",
+  "test_data_path": "allennlp/tests/fixtures/openie/",
   "evaluate_on_test": true,
   "model": {
     "type": "openie",
@@ -37,7 +36,6 @@
       "type": "lstm",
       "input_size": 1074, // current word + predicate word
       "hidden_size": 10,
-//      "cell_size": 50, // is this needed? what are sensible values?
       "num_layers": 2,
       "dropout": 0.5,
       "bidirectional": true
@@ -54,13 +52,13 @@
   },
   "iterator": {
     "type": "bucket",
-    "sorting_keys": [["tokens", "num_tokens"]], // The original keys from Nikett ([["sentences", "num_fields"]]) raise an error Where're these keys coming from?
+    "sorting_keys": [["tokens", "num_tokens"]],
     "batch_size": 32
   },
   "trainer": {
     "optimizer": {
       "type": "adam"
-    }
+    },
     "num_epochs": 1,
     "patience": 10,
     "cuda_device": -1,

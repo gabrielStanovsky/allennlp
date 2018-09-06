@@ -196,7 +196,7 @@ class NeuralOie(Model):
     @classmethod
     def from_params(cls, vocab: Vocabulary, params: Params) -> 'NeuralOie':
         embedder_params = params.pop("text_field_embedder")
-        text_field_embedder = TextFieldEmbedder.from_params(vocab, embedder_params)
+        text_field_embedder = TextFieldEmbedder.from_params(vocab)
 
         encoder = Seq2SeqEncoder.from_params(params.pop("encoder"))
         label_smoothing = params.pop_float("label_smoothing", None)
