@@ -2,7 +2,9 @@ import logging
 import pdb
 from pprint import pprint
 
-from allennlp.common.util import JsonDict
+from typing import List
+
+from allennlp.common.util import JsonDict, sanitize
 from allennlp.data import DatasetReader, Instance
 from allennlp.data.tokenizers import WordTokenizer
 from allennlp.models import Model
@@ -28,30 +30,60 @@ class OpenIePredictor(Predictor):
         super().__init__(model, dataset_reader)
         self._tokenizer = WordTokenizer(word_splitter=SpacyWordSplitter(pos_tags=True))
 
-    def _generate_tag_spans(self, tokens, sentence_bio_tags):
+    @staticmethod
+    def join_mwp(tags: List[str]):
+        """
+        Join multi-word predicates to a single
+        predicate ('V') token.
+        """
+        ret = []
+        verb_flag = False
+        for tag in tags:
+            if "V" in tag:
+                # Create a continuous 'V' BIO span
+                prefix, suffix = tag.split("-")
+
+                if verb_flag:
+                    # Continue a verb label across the different predicate parts
+                    prefix = 'I'
+
+                ret.append(f"{prefix}-V")
+                verb_flag = True
+            else:
+                ret.append(tag)
+                verb_flag = False
+
+        return ret
+
+    @staticmethod
+    def make_oie_string(tokens: List[Token], tags: List[str]):
         """
         Converts a list of model outputs (i.e., a list of lists of bio tags, each
-        pertaining to a single predicate), return a list of dictionaries,
-        representing the linearized form of each of the corresponding predicate roles:
-        [{"ARG0": "...",
-          "V": "...",
-          "ARG1": "...",
-          ...}]
+        pertaining to a single word), returns an inline bracket representation of
+        the prediction.
         """
-        sentence_tag_spans = []
-        for bio_tags in sentence_bio_tags:
-            pred_tag_spans = defaultdict(lambda: '')
-            for word_index, tag in enumerate(bio_tags):
-                # Strip BIO to get just the tag label
-                tag_label = tag.split('-')[-1]
-                if tag_label != 'O':
-                    if tag_label.endswith('V'):
-                        tag_label = 'V'
+        frame = []
+        chunk = []
 
-                    # Concatenate this word to its label
-                    pred_tag_spans[tag_label] += ' ' + tokens[word_index]
-            sentence_tag_spans.append(pred_tag_spans)
-        return sentence_tag_spans
+        words = [token.text for token in tokens]
+
+        for (token, tag) in zip(words, tags):
+            if tag.startswith("I-"):
+                chunk.append(token)
+            else:
+                if chunk:
+                    frame.append("[" + " ".join(chunk) + "]")
+                    chunk = []
+
+                if tag.startswith("B-"):
+                    chunk.append(tag[2:] + ": " + token)
+                elif tag == "O":
+                    frame.append(token)
+
+        if chunk:
+            frame.append("[" + " ".join(chunk) + "]")
+
+        return " ".join(frame)
 
     def _json_to_instance(self, json_dict: JsonDict) -> Tuple[Instance, JsonDict]:
         """
@@ -79,13 +111,13 @@ class OpenIePredictor(Predictor):
                                                          "ARG1": "...",
                                                          ...}]}
         """
-        sent_tokens = self._tokenizer.tokenize(inputs["sentence_tokens"])
+        sent_tokens = self._tokenizer.tokenize(inputs["sentence"])
         sentence_token_text = [t.text for t in sent_tokens]
 
         # Find all verbs in the input sentence
         pred_ids = [i for (i, t)
-                             in enumerate(sent_tokens)
-                             if t.pos_ == "VERB"]
+                    in enumerate(sent_tokens)
+                    if t.pos_ == "VERB"]
 
         # Create instances
         instances = [self._json_to_instance({"sentence": sent_tokens,
@@ -102,5 +134,21 @@ class OpenIePredictor(Predictor):
             outputs = None
 
         # Build and return output dictionary
-        return {"tokens": sentence_token_text,
-                "tag_spans": self._generate_tag_spans(sentence_token_text, outputs)}
+        results = {"verbs": [], "words": sent_tokens}
+
+        for tags, pred_id in zip(outputs, pred_ids):
+            # Join multi-word predicates
+            tags = self.join_mwp(tags)
+
+            # Create description text
+            description = self.make_oie_string(sent_tokens, tags)
+
+            # Add a predicate prediction to the return dictionary.
+            results["verbs"].append({
+                    "verb": sent_tokens[pred_id].text,
+                    "description": description,
+                    "tags": tags,
+            })
+
+        return sanitize(results)
+
