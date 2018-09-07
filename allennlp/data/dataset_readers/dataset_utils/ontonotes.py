@@ -172,16 +172,7 @@ class Ontonotes:
     -1 Co-reference: ``str``
         Co-reference chain information encoded in a parenthesis structure. For documents that do
          not have co-reference annotations, each line is represented with a "-".
-
-    Parameters
-    ----------
-    delimiter : ``Optional[str] = None``
-        The delimiter to use when splitting column values. The default value, None, is interpreted as
-        splitting using all space characters.
     """
-    def __init__(self, delimiter: Optional[str] = None):
-        self.delimiter = delimiter
-
     def dataset_iterator(self, file_path: str) -> Iterator[OntonotesSentence]:
         """
         An iterator over the entire dataset, yielding all sentences processed.
@@ -270,10 +261,8 @@ class Ontonotes:
         coref_stacks: DefaultDict[int, List[int]] = defaultdict(list)
 
         for index, row in enumerate(conll_rows):
-            if self.delimiter is not None:
-                conll_components = row.split(self.delimiter)
-            else:
-                conll_components = row.split()
+            conll_components = row.split()
+
             document_id = conll_components[0]
             sentence_id = int(conll_components[1])
             word = conll_components[3]

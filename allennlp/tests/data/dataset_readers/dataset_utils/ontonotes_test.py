@@ -119,25 +119,11 @@ class TestOntonotes(AllenNlpTestCase):
                                                         "children))))))) (. .)))")
         assert annotation.coref_spans == {(14, (6, 6))}
 
-    def test_ontonotes_can_handle_different_delimiters(self):
-        reader = Ontonotes('\t')
-
-        # This example breaks when using the default delimiter, and requires the tab
-        # delimiter to parse correctly.
-        annotated_sentences = list(reader.dataset_iterator(self.FIXTURES_ROOT / 'conll_2012' / 'subdomain3'))
-        annotation = annotated_sentences[0]
-
-        assert annotation.words == ['Georges', 'Lechartier', 'wrote', ':', '"', 'The', 'true', 'founder', 'of', 'anarchy', 'was', 'Jesus', 'Christ',
-                                    'and', '\xa0', '...', 'the', 'first', 'anarchist', 'society', 'was', 'that', 'of', 'the', 'apostles', '"', '.']
-
-
-
     def test_dataset_path_iterator(self):
         reader = Ontonotes()
         files = list(reader.dataset_path_iterator(self.FIXTURES_ROOT / 'conll_2012'))
         expected_paths = [str(self.FIXTURES_ROOT / 'conll_2012' / 'subdomain' / 'example.gold_conll'),
-                          str(self.FIXTURES_ROOT / 'conll_2012' / 'subdomain2' / 'example.gold_conll'),
-                          str(self.FIXTURES_ROOT / 'conll_2012' / 'subdomain3' / 'example.gold_conll')]
+                          str(self.FIXTURES_ROOT / 'conll_2012' / 'subdomain2' / 'example.gold_conll')]
         assert len(files) == len(expected_paths)
         assert set(files) == set(expected_paths)
 
