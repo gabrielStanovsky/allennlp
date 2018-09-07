@@ -14,7 +14,7 @@ class TestOpenIePredictor(AllenNlpTestCase):
                 "sentence": "Angela Merkel met and spoke to her EU counterparts during the climate submit in Paris."
         }
 
-        archive = load_archive(self.FIXTURES_ROOT / 'openie' / 'serialization' / 'model.tar.gz')
+        archive = load_archive(self.FIXTURES_ROOT / 'open_information_extraction' / 'serialization' / 'model.tar.gz')
         predictor = Predictor.from_archive(archive, 'openie_predictor')
 
         result = predictor.predict_json(inputs)
@@ -44,7 +44,7 @@ class TestOpenIePredictor(AllenNlpTestCase):
         Tests whether the model copes with sentences without verbs.
         """
         input1 = {"sentence": "Blah no verb sentence."}
-        archive = load_archive(self.FIXTURES_ROOT / 'openie' / 'serialization' / 'model.tar.gz')
+        archive = load_archive(self.FIXTURES_ROOT / 'open_information_extraction' / 'serialization' / 'model.tar.gz')
         predictor = Predictor.from_archive(archive, 'openie_predictor')
 
         result = predictor.predict_json(input1)
