@@ -6,9 +6,7 @@
         "type": "single_id",
         "lowercase_tokens": true
       },
-      "elmo": {
-        "type": "elmo_characters"
-      }
+      "delimiter": "\t"
     }
   },
   "train_data_path": "allennlp/tests/fixtures/openie/",

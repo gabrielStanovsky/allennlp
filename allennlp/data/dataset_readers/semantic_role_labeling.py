@@ -55,7 +55,7 @@ class SrlReader(DatasetReader):
     def _read(self, file_path: str):
         # if `file_path` is a URL, redirect to the cache
         file_path = cached_path(file_path)
-        ontonotes_reader = Ontonotes(delimiter = '\t')
+        ontonotes_reader = Ontonotes()
         logger.info("Reading SRL instances from dataset files at: %s", file_path)
         if self._domain_identifier is not None:
             logger.info("Filtering to only include file paths containing the %s domain", self._domain_identifier)
